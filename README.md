@@ -6,7 +6,8 @@ You need a working installation of SWI-Prolog's latest development release.
 
 ## Current status
 We have a web server running on `localhost`.
-The user can upload a file and view its contents.
+The user can upload a data file.
+The system will attempt to load the file to an R data frame and plot it using the default plotting method.
 
 To start the server:
 

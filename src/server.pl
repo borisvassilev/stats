@@ -12,7 +12,6 @@
 
 :- http_handler(root(.), root, []).
 :- http_handler(root(peek), peek, []).
-:- http_handler(root(show), show, []).
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]).
@@ -21,19 +20,22 @@ root(_Request) :-
     reply_html_page(title("STATS"), [\stats_home]).
 
 stats_home -->
-    html([h1("Statistical analysis made easy"),
+    html(
+        [ h1("Statistical analysis made easy"),
           p("Your data:"),
-          \upload_form]).
+          \upload_form ]).
 
 upload_form -->
-    html(form([method("POST"),
-               action(location_by_id(peek)),
-               enctype("multipart/form-data")
-              ],
-              table([],
-                    [tr([td(input([type(file), name(file)])),
-                         td(input([type(submit), value("Peek")]))])
-                    ]))).
+    html(
+        form(
+            [ method("POST"),
+              action(location_by_id(peek)),
+              enctype("multipart/form-data")
+            ],
+            table([],
+                [ tr([td(input([type(file), name(file)])),
+                      td(input([type(submit), value("Peek")]))])
+                ]))).
 
 peek(Request) :-
     (   multipart_post_request(Request)
@@ -46,12 +48,17 @@ peek(Request) :-
     ).
 
 show_file(FileName, Saved) -->
-    {   setup_call_cleanup(
-            open(Saved, read, In),
-            read_string(In, _, FileContent),
-            close(In))
+    {   tmp_file_stream(binary, FigFile, FigOut),
+        close(FigOut),
+        process_create(path("Rscript"),
+            [ "--vanilla", "data-overview.R", Saved, FigFile ],
+            [stderr(std)]),
+        setup_call_cleanup(
+            open(FigFile, read, FigIn),
+            read_string(FigIn, _, FigSVG),
+            close(FigIn))
     },
-    html([p(pre("~w"-FileName)), p(pre(\[FileContent]))]).
+    html(div([id(FileName)], \[FigSVG])).
 
 multipart_post_request(Request) :-
     memberchk(method(post), Request),
