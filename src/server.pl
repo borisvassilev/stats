@@ -11,6 +11,7 @@
 
 :- http_handler(root(.), root, []).
 :- http_handler(root(peek), peek, []).
+:- http_handler(root(analyze), analyze, []).
 
 server(Port) :-
     http_server(http_dispatch, [port(Port)]),
@@ -48,12 +49,36 @@ peek(Request) :-
     ;   throw(http_reply(bad_request(bad_file_upload)))
     ).
 
+:- use_module(library(sgml)).
+:- use_module(library(sgml_write)).
+
+analyze(Request) :-
+    http_parameters(Request, [data(RSave, [])]),
+    tmp_file_stream(binary, RFig, RFig_stream),
+    close(RFig_stream),
+    process_create(path("Rscript"),
+        [ "--vanilla", "data-analysis.R", RSave, RFig ],
+        [ stdout(pipe(Out)), stderr(std) ]),
+    read_string(Out, _, Result),
+    close(Out),
+    open(RFig, read, Fig_in),
+    load_structure(Fig_in, Fig_content, [dialect(xml)]),
+    with_output_to(string(Fig),
+        xml_write(current_output, Fig_content, [header(false), layout(false)])),
+    reply_html_page(
+        title("STATS: Analysis results"),
+        [   h2("Pearson's correlation results"),
+            p(pre(\[Result])),
+            h2("Scatter plot of the data"),
+            p(\[Fig])
+        ]).
+
 overview(FileName, Saved) -->
     {   tmp_file_stream(binary, RSave, RSave_stream),
         close(RSave_stream),
         process_create(path("Rscript"),
             [ "--vanilla", "data-overview.R", Saved, RSave ],
-            [stdout(pipe(Out)), stderr(std)]),
+            [ stdout(pipe(Out)), stderr(std) ]),
         read_string(Out, _, Overview),
         close(Out)
     },
@@ -64,7 +89,13 @@ overview(FileName, Saved) -->
         ]).
 
 choose_analysis(RSave) -->
-    html(p(\[RSave])).
+    {   http_link_to_id(analyze, [data=RSave], Analyze_ref)
+    },
+    html(
+        [ h2("How do you want to analyze your data?"),
+          p(["Suggested method: ",
+             a(href(Analyze_ref), "Pearson's correlation")])
+        ]).
 
 multipart_post_request(Request) :-
     memberchk(method(post), Request),

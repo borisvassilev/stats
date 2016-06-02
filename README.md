@@ -10,6 +10,7 @@ You need a recent version of the [R Project for Statistical Computing](https://w
 We have a web server running on `localhost`.
 The user can upload a data file.
 The system will attempt to load the file to an R data frame and show an overview.
+It will then try to suggest an analysis method, do the analysis, and present the results.
 
 To start the server:
 
