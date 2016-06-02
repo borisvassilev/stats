@@ -2,12 +2,12 @@
 Web-based front end for statistical analysis
 
 ## Prerequisites
-You need a working installation of SWI-Prolog's latest development release.
+You need a working installation of [SWI-Prolog's latest development release](http://www.swi-prolog.org/git.html).
 
 ## Current status
 We have a web server running on `localhost`.
 The user can upload a data file.
-The system will attempt to load the file to an R data frame and plot it using the default plotting method.
+The system will attempt to load the file to an R data frame and show an overview.
 
 To start the server:
 
