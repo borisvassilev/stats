@@ -2,7 +2,9 @@
 Web-based front end for statistical analysis
 
 ## Prerequisites
-You need a working installation of [SWI-Prolog's latest development release](http://www.swi-prolog.org/git.html).
+You need a working installation of [SWI-Prolog's latest development release](http://www.swi-prolog.org/git.html) for the web server.
+
+You need a recent version of the [R Project for Statistical Computing](https://www.r-project.org/) for the statistical analysis back-end.
 
 ## Current status
 We have a web server running on `localhost`.
